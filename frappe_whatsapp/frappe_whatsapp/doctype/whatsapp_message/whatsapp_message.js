@@ -19,6 +19,12 @@ frappe.ui.form.on('WhatsApp Message', {
 
 		// add custom button to send read receipt
 		add_mark_as_read(frm);
+	},
+	reference_doctype: function(frm) {
+		// Clear reference_name when reference_doctype changes
+		if (frm.doc.reference_doctype) {
+			frm.set_value('reference_name', null);
+		}
 	}
 });
 

@@ -11,6 +11,10 @@ class WhatsAppMessage(Document):
 
     def before_insert(self):
         """Send message."""
+        # Ensure type is set (default to Outgoing if not specified)
+        if not self.type:
+            self.type = "Outgoing"
+
         if self.type == "Outgoing" and self.message_type != "Template":
             if self.attach and not self.attach.startswith("http"):
                 link = frappe.utils.get_url() + "/" + self.attach
@@ -64,7 +68,8 @@ class WhatsAppMessage(Document):
         }
 
         if template.sample_values:
-            field_names = template.field_names.split(",") if template.field_names else template.sample_values.split(",")
+            field_names = template.field_names.split(
+                ",") if template.field_names else template.sample_values.split(",")
             parameters = []
             template_parameters = []
 
@@ -78,10 +83,11 @@ class WhatsAppMessage(Document):
                 for field_name in field_names:
                     value = custom_values.get(field_name.strip())
                     parameters.append({"type": "text", "text": value})
-                    template_parameters.append(value)                    
+                    template_parameters.append(value)
 
             else:
-                ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
+                ref_doc = frappe.get_doc(
+                    self.reference_doctype, self.reference_name)
                 for field_name in field_names:
                     value = ref_doc.get_formatted(field_name.strip())
                     parameters.append({"type": "text", "text": value})
@@ -162,12 +168,13 @@ class WhatsAppMessage(Document):
                 }
             ).insert(ignore_permissions=True)
 
-            frappe.throw(msg=error_message, title=res.get("error_user_title", "Error"))
+            frappe.throw(msg=error_message, title=res.get(
+                "error_user_title", "Error"))
 
     def format_number(self, number):
         """Format number."""
         if number.startswith("+"):
-            number = number[1 : len(number)]
+            number = number[1: len(number)]
 
         return number
 
@@ -207,8 +214,10 @@ class WhatsAppMessage(Document):
             error_message = res.get("Error", res.get("message"))
             frappe.log_error("WhatsApp API Error", f"{error_message}\n{res}")
 
+
 def on_doctype_update():
-    frappe.db.add_index("WhatsApp Message", ["reference_doctype", "reference_name"])
+    frappe.db.add_index("WhatsApp Message", [
+                        "reference_doctype", "reference_name"])
 
 
 @frappe.whitelist()
